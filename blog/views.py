@@ -1,11 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, BasePermission
-from django_filters.rest_framework import FilterSet, DjangoFilterBackend, CharFilter, NumberFilter
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django_filters.rest_framework import FilterSet, CharFilter, NumberFilter
 from .serializers import PostSerializer, CommentSerializer
 from .models import Post, Comment
 
 
-class IsAuthor(BasePermission):
+class IsAuthor(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         return bool(request.user and request.user == obj.author)
 
