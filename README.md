@@ -1,6 +1,7 @@
 # Django laboratory works
 
-This repository contains django laboratory works written by Dmytro Kasianchuk.
+This repository contains django laboratory works written by Dmytro Kasianchuk(KV-01mn).
+Topic - Blog
  
 Follow next links to read docs:
 
