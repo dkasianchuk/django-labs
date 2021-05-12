@@ -1,5 +1,5 @@
-from rest_framework.serializers import ModelSerializer, CharField, ValidationError
-from .models import CustomUser
+from rest_framework.serializers import ModelSerializer, CharField, ValidationError, SerializerMethodField
+from .models import CustomUser, ConnectedUsers
 
 
 class CustomUserSerializer(ModelSerializer):
@@ -16,3 +16,15 @@ class CustomUserSerializer(ModelSerializer):
 
     def create(self, validated_data):
         return CustomUser.objects.create_user(**validated_data)
+
+
+class ConnectedUserSerializer(ModelSerializer):
+    username = SerializerMethodField()
+
+    @staticmethod
+    def get_username(obj):
+        return obj.user.username
+
+    class Meta:
+        model = ConnectedUsers
+        fields = ['username', 'last_joined']

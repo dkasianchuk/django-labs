@@ -1,8 +1,8 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import FilterSet, DjangoFilterBackend, CharFilter
-from .models import CustomUser
-from .serializers import CustomUserSerializer
+from .models import CustomUser, ConnectedUsers
+from .serializers import CustomUserSerializer, ConnectedUserSerializer
 
 
 class CustomUsersFilter(FilterSet):
@@ -22,3 +22,12 @@ class CustomUserReadViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = CustomUsersFilter
+
+
+class OnlineUsersViewSet(ReadOnlyModelViewSet):
+    """
+    API endpoint that allows to view online users
+    """
+    queryset = ConnectedUsers.objects.all()
+    serializer_class = ConnectedUserSerializer
+    permission_classes = [IsAuthenticated]

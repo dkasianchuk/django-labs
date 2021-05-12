@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, DateField, EmailField
+from django.db.models import Model, CharField, DateField, EmailField, OneToOneField, CASCADE, IntegerField, DateTimeField
+from django.contrib.auth import get_user_model
 
 
 class CustomUser(AbstractUser):
@@ -15,3 +16,15 @@ class CustomUser(AbstractUser):
 
     class Meta:
         ordering = ('username',)
+
+    def __str__(self):
+        return self.username
+
+
+class ConnectedUsers(Model):
+    user = OneToOneField(get_user_model(), on_delete=CASCADE)
+    count = IntegerField(default=1)
+    last_joined = DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user
