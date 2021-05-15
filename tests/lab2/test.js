@@ -112,25 +112,25 @@
         await printOnlineUsers(tokens[0])
         const socket2 = await createSocket(usernames[0], tokens[0], 'blog/')
         await printOnlineUsers(tokens[1])
-        await createSocket(usernames[1], tokens[1], 'blog/')
-        await printOnlineUsers(tokens[1])
-        await createSocket(usernames[2], tokens[2], 'blog/')
+        const socket3 = await createSocket(usernames[1], tokens[1], 'blog/')
         const wrongSocket = await createSocket('wrongUser', 'wrongToken', 'blog/')
-        await printOnlineUsers(tokens[1])
-        socket2.close()
         await printOnlineUsers(tokens[1])
         const testData = JSON.stringify({
             'type': 'data',
-            'targetUsername': 'user3',
+            'targetUsername': 'user1',
             'comment': 'Some comment'
         })
-        socket1.send(testData)
+        socket3.send(testData)
         const wrongData = JSON.stringify({
             'type': 'data',
             'comment': 'Some comment'
         })
         socket1.send(wrongData)
         wrongSocket.send(testData)
+        socket3.close()
+        await printOnlineUsers(tokens[1])
+        socket2.close()
+        await printOnlineUsers(tokens[1])
     }
 
     testWebsockets('user1', 'user2', 'user3')
