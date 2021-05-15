@@ -17,6 +17,3 @@ services:
     command: "redis-server --requirepass django_password"
     ports:
       - "6379:6379"
-    volumes:
-      - ./docker/redis/data:/var/lib/redis
-      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
