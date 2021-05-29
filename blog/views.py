@@ -1,8 +1,11 @@
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import FilterSet, CharFilter, NumberFilter
 from .serializers import PostSerializer, CommentSerializer
 from .models import Post, Comment
+from django.http import HttpResponse
+from .tasks import get_user_activities, send_follow_emails
 
 
 class IsAuthor(IsAuthenticated):
@@ -67,3 +70,22 @@ class CommentViewSet(BaseModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     filterset_class = CommentFilter
+
+
+class ActivitiesViewSet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request):
+        task_id = get_user_activities.apply_async(queue='activities', args=(request.user.username,))
+        return HttpResponse(f'Collecting user activities in progress. Task id - {task_id}.')
+
+
+class FollowEmailViewSet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        task_id = send_follow_emails.apply_async(queue='emails', args=(request.user.username, request.data))
+        return HttpResponse(f'Sending emails in progress. Task id - {task_id}.')
+

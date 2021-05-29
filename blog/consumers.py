@@ -5,16 +5,12 @@ from rest_framework.authtoken.models import Token
 from django.db.models import F
 
 
-def get_group_name(username):
-    return "%s_group" % username
-
-
 def update_count(connected_user, delta):
     connected_user.count = F('count') + delta
     connected_user.save()
 
 
-class BlogConsumer(JsonWebsocketConsumer):
+class ConsumerMixin(JsonWebsocketConsumer):
     group_name = None
 
     def connect(self):
@@ -29,26 +25,44 @@ class BlogConsumer(JsonWebsocketConsumer):
             else:
                 update_count(connected_user, -1)
 
+    def handle_data_request(self, content):
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
+            {'type': 'message.handle', 'content': content})
+
+    def get_group_name(self, username):
+        return "%s_group" % username
+
     def receive_json(self, content, **kwargs):
         try:
             if content['type'] == 'data':
                 if self.scope['user'].is_authenticated:
-                    async_to_sync(self.channel_layer.group_send)(
-                        get_group_name(content['targetUsername']),
-                        {'type': 'message.handle', 'content': content})
+                    self.handle_data_request(content)
                 else:
                     self.send_json({'type': 'error', 'text': 'No authenticated.'})
             elif content['type'] == 'auth' and not self.scope['user'].is_authenticated:
                 current_user = Token.objects.get(key=content['token']).user
-                self.group_name = get_group_name(current_user.username)
+                self.group_name = self.get_group_name(current_user.username)
                 connected_user, created = ConnectedUsers.objects.get_or_create(user=current_user)
                 if not created:
                     update_count(connected_user, 1)
                 async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
                 self.scope['user'] = current_user
-                self.send_json({'type': 'auth', 'success': True})
+                self.send_json({'type': 'auth', 'result': True})
         except Exception as e:
-            self.send_json({'type': 'error', 'text': repr(e), 'response': content})
+            self.send_json({'type': 'error', 'text': repr(e)})
 
     def message_handle(self, event):
         self.send_json(event['content'])
+
+
+class BlogConsumer(ConsumerMixin):
+    def handle_data_request(self, content):
+        async_to_sync(self.channel_layer.group_send)(
+            self.get_group_name(content['targetUsername']),
+            {'type': 'message.handle', 'content': {'type': 'message', 'result': content}})
+
+
+class TasksConsumer(ConsumerMixin):
+    def get_group_name(self, username):
+        return f"finished_tasks_{username}"
