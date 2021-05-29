@@ -72,7 +72,7 @@ class CommentViewSet(BaseModelViewSet):
     filterset_class = CommentFilter
 
 
-class ActivitiesViewSet(APIView):
+class ActivitiesView(APIView):
     permission_classes = [IsAuthenticated]
 
     @staticmethod
@@ -81,7 +81,7 @@ class ActivitiesViewSet(APIView):
         return HttpResponse(f'Collecting user activities in progress. Task id - {task_id}.')
 
 
-class FollowEmailViewSet(APIView):
+class FollowEmailView(APIView):
     permission_classes = [IsAuthenticated]
 
     @staticmethod
